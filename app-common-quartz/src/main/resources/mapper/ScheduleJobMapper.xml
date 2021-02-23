@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yesido.quartz.mapper.ScheduleJobMapper">
+	<resultMap id="BaseResultMap" type="com.yesido.proto.entity.quartz.ScheduleJob">
+		<id column="id" property="id" />
+		<result column="belong_app" property="belongApp" />
+		<result column="job_name" property="jobName" />
+		<result column="job_group" property="jobGroup" />
+		<result column="cron" property="cron" />
+		<result column="bean_class" property="beanClass" />
+		<result column="method_name" property="methodName" />
+		<result column="job_status" property="jobStatus" />
+		<result column="remark" property="remark" />
+		<result column="run_type" property="runType" />
+		<result column="createtime" property="createtime" />
+		<result column="updatetime" property="updatetime" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		id, belongApp, job_name, job_group, cron, bean_class,
+		method_name, job_status, remark, run_type, createtime, updatetime
+	</sql>
+
+	<select id="findAll" resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from schedule_job
+	</select>
+
+	<select id="getOne" parameterType="java.lang.Long" resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from schedule_job
+		where id = #{id}
+	</select>
+
+	<update id="updateJobStatus">
+		update schedule_job
+		set job_status = #{job_status}
+		where id = #{id}
+	</update>
+</mapper>

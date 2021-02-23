@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>调度任务</title>
+
+<link th:href="@{/tools/bootstrap-3.3.7/css/bootstrap.min.css}" rel="stylesheet" />
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.bootcss.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+  <script src="https://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
+<![endif]-->
+    
+<script th:src="@{/tools/jquery/1.10.2/jquery.min.js}"></script>  
+<script th:src="@{/tools/bootstrap-3.3.7/js/bootstrap.min.js}"></script>
+<script th:src="@{/tools/layer-v3.0.3/layer.js}"></script>
+<script th:src="@{/tools/layer-v3.0.3/layer_demo.js}"></script>
+<script th:src="@{/service/jqAjax.js}"></script> 
+<script th:src="@{/service/js/index.js}"></script> 
+</head>
+<body>
+<div class="text-center" style="width: 1200px;margin: 5% auto 0;">
+	<div class="panel panel-primary">
+		<div class="panel-heading">
+		<h3 class="panel-title">调度任务</h3>
+		</div>
+		<div class="panel-body">
+			<div class="text-left">
+				<button class="btn btn-xs" th:onclick="'status();'">当前状态</button>
+				<button class="btn btn-xs" th:onclick="'startScheduler();'">开启计划任务</button>
+				<button class="btn btn-xs" th:onclick="'startup();'">startup</button>
+				<button class="btn btn-xs" th:onclick="'shutdown();'">shutdown</button>
+				<span id="status"></span>
+			</div>
+			<table class="table">
+				<thead>
+					<tr>
+						<td>id</td>
+						<td>名称</td>
+						<td>分组</td>
+						<td>cron</td>
+						<td>bean_class</td>
+						<td>方法名</td>
+						<td>状态</td>
+						<td>description</td>
+						<td>操作</td>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="job,status:${jobs}" th:id="${job.id}">
+						<td th:text="${job.id}">id</td>
+						<td th:text="${job.jobName}">jobName</td>
+						<td th:text="${job.jobGroup}">jobGroup</td>
+						<td th:text="${job.cronExpression}">cronExpression</td>
+						<td th:text="${job.beanClass}">beanClass</td>
+						<td th:text="${job.methodName}">methodName</td>
+						<td>
+							<span th:if="${job.jobStatus} == 0">无任务</span>
+			                <span th:if="${job.jobStatus} == 1">正常</span>
+			                <span th:if="${job.jobStatus} == 2">暂停</span>
+			                <span th:if="${job.jobStatus} == 3">完成</span>
+			                <span th:if="${job.jobStatus} == 4">错误</span>
+			                <span th:if="${job.jobStatus} == 5">阻塞</span>
+						</td>
+						<td th:text="${job.description}">description</td>
+						<td>
+							<button class="btn btn-xs" 
+								th:onclick="'addJob(\'' + ${job.id} + '\');'">添加</button>
+							<button class="btn btn-xs" 
+								th:onclick="'pauseJob(\'' + ${job.id} + '\');'">暂停</button>
+							<button class="btn btn-xs" 
+								th:onclick="'resumeJob(\'' + ${job.id} + '\');'">恢复</button>
+							<button class="btn btn-xs" 
+								th:onclick="'removeJob(\'' + ${job.id} + '\');'">移除</button>
+							<button class="btn btn-xs" 
+								th:onclick="'runJobOneTime(\'' + ${job.id} + '\');'">执行(一次)</button>		
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+</body>
+</html>
