@@ -15,7 +15,9 @@ import org.springframework.stereotype.Service;
 import com.yesido.redis.service.RedisService;
 
 /**
- * 分布式锁：需要等待的锁，如果不需要等待请使用RedisService.setNxEx()
+ * 分布式锁<br>
+ * redisson：https://github.com/redisson/redisson/wiki/
+ * 
  * 
  * @author yesido
  * @date 2019年7月30日 下午3:14:12
@@ -73,7 +75,6 @@ public class RedisLock {
         if (expireSeconds <= 0 || waitMilliseconds <= 0) {
             throw new RuntimeException("[RedisLock] time param illegal!");
         }
-        logger.info("[RedisLock]key->{}, val->{}, 过期时间->{}秒，等待时间->{}毫秒", key, val, expireSeconds, waitMilliseconds);
         int timeout = waitMilliseconds;
         while (timeout >= 0) {
             boolean lock = redisService.setNxEx(key, val, expireSeconds, TimeUnit.SECONDS);
@@ -109,6 +110,7 @@ public class RedisLock {
      * 配合value时间释放锁
      */
     public void unlock(String key, String val) {
+        // 非原子操作
         String value = redisService.get(key);
         if (value != null && value.equals(val)) {
             redisService.delete(key);
@@ -146,7 +148,6 @@ public class RedisLock {
         private String key;
         private String val;
         private int expireSeconds;
-        private int renewCount = 0;
 
         public ExpireRenewWoker(RedisService redisService, String key, String val, int expireSeconds) {
             this.redisService = redisService;
@@ -158,26 +159,16 @@ public class RedisLock {
         @Override
         public void run() {
             try {
-                if (++renewCount > 10) {
-                    cancel();
-                    logger.info("[RedisLock]续期结束：超过续期次数[{}]限制，key->{}，val->{}", renewCount, key, val);
-                    return;
-                }
                 String cacheVal = redisService.get(key);
                 if (cacheVal == null) {
-                    logger.info("[RedisLock]续期结束：锁已经释放，key->{}，val->{}", key, val);
                     cancel();
                     return;
                 }
                 if (!cacheVal.equals(val)) {
-                    logger.info("[RedisLock]续期结束：锁已经被覆盖，key->{}，val->{}", key, val);
                     cancel();
                     return;
                 }
-                long timeout = expireSeconds > 3 ? (expireSeconds / 3) : expireSeconds; // 每次续约1/3的过期时间
-                long ttl = redisService.ttl(key) + timeout;
-                redisService.expire(key, ttl);
-                logger.info("[RedisLock]续期，key->{}, val->{}, 续期={}秒，续期后ttl={}秒", key, val, timeout, ttl);
+                redisService.expire(key, expireSeconds); // 续期
             } catch (Exception e) {
                 logger.error("[RedisLock]锁key({})续期失败：", key, e);
             }

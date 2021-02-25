@@ -18,7 +18,6 @@ import com.alibaba.fastjson.JSONObject;
  * redis 服务
  * 
  * @author yesido
- * @param <T>
  * @date 2018年9月23日
  */
 @Component
